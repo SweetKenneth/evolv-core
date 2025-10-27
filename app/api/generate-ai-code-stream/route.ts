@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const isGroq =
       model.startsWith("groq/") || model === "moonshotai/kimi-k2-instruct-0905";
 
-    // Placeholder for any future model you want to plug in
+    // Placeholder for any future model
     const isCustom = model.startsWith("custom/");
 
     const modelProvider = isOpenAI
@@ -38,4 +38,26 @@ export async function POST(req: Request) {
     } else if (isGroq) {
       actualModel = model.replace("groq/", "");
     } else if (isCustom) {
-      actualModel = model.replace("
+      actualModel = model.replace("custom/", "");
+    } else {
+      actualModel = model;
+    }
+
+    const response = await streamText({
+      model: modelProvider(actualModel),
+      prompt,
+    });
+
+    return new NextResponse(response.toDataStream(), {
+      headers: {
+        "Content-Type": "text/event-stream",
+      },
+    });
+  } catch (err) {
+    console.error("[generate-ai-code-stream] Error:", err);
+    return new NextResponse(
+      JSON.stringify({ error: "Failed to generate text stream" }),
+      { status: 500 }
+    );
+  }
+}
