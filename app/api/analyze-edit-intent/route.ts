@@ -15,11 +15,6 @@ const groq = createGroq({
   baseURL: isUsingAIGateway ? aiGatewayBaseURL : undefined,
 });
 
-const anthropic = createAnthropic({
-  apiKey: process.env.AI_GATEWAY_API_KEY ?? process.env.ANTHROPIC_API_KEY,
-  baseURL: isUsingAIGateway ? aiGatewayBaseURL : (process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com/v1'),
-});
-
 const openai = createOpenAI({
   apiKey: process.env.AI_GATEWAY_API_KEY ?? process.env.OPENAI_API_KEY,
   baseURL: isUsingAIGateway ? aiGatewayBaseURL : process.env.OPENAI_BASE_URL,
