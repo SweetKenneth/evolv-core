@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { groq } from "@ai-sdk/groq";
 import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google"; // Gemini
-import { streamText } from "ai";
+import { streamText, StreamTextResult } from "ai";
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const isGroq =
       model.startsWith("groq/") || model === "moonshotai/kimi-k2-instruct-0905";
 
-    // Placeholder for any future model
+    // Placeholder for future LLMs
     const isCustom = model.startsWith("custom/");
 
     const modelProvider = isOpenAI
@@ -43,12 +43,13 @@ export async function POST(req: Request) {
       actualModel = model;
     }
 
-    const response = await streamText({
+    const response: StreamTextResult = await streamText({
       model: modelProvider(actualModel),
       prompt,
     });
 
-    return new NextResponse(response.toDataStream(), {
+    // Fallback to the raw readable stream
+    return new NextResponse(response.stream, {
       headers: {
         "Content-Type": "text/event-stream",
       },
