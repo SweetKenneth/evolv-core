@@ -4,7 +4,6 @@ import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google"; // Gemini
 import { streamText } from "ai";
 
-// POST handler
 export async function POST(req: Request) {
   try {
     const { prompt, model: requestedModel } = await req.json();
@@ -16,7 +15,7 @@ export async function POST(req: Request) {
     const isGroq =
       model.startsWith("groq/") || model === "moonshotai/kimi-k2-instruct-0905";
 
-    // Placeholder: future LLM provider
+    // Placeholder for any future model you want to plug in
     const isCustom = model.startsWith("custom/");
 
     const modelProvider = isOpenAI
@@ -39,26 +38,4 @@ export async function POST(req: Request) {
     } else if (isGroq) {
       actualModel = model.replace("groq/", "");
     } else if (isCustom) {
-      actualModel = model.replace("custom/", "");
-    } else {
-      actualModel = model;
-    }
-
-    const response = await streamText({
-      model: modelProvider(actualModel),
-      prompt,
-    });
-
-    return new NextResponse(response.toAIStream(), {
-      headers: {
-        "Content-Type": "text/event-stream",
-      },
-    });
-  } catch (err) {
-    console.error("[generate-ai-code-stream] Error:", err);
-    return new NextResponse(
-      JSON.stringify({ error: "Failed to generate text stream" }),
-      { status: 500 }
-    );
-  }
-}
+      actualModel = model.replace("
