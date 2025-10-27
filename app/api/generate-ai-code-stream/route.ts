@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { groq } from "@ai-sdk/groq";
 import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google"; // Gemini
-import { streamText, StreamTextResult } from "ai";
+import { streamText } from "ai";
 
 export async function POST(req: Request) {
   try {
@@ -43,12 +43,11 @@ export async function POST(req: Request) {
       actualModel = model;
     }
 
-    const response: StreamTextResult = await streamText({
+    const response = await streamText({
       model: modelProvider(actualModel),
       prompt,
     });
 
-    // Fallback to the raw readable stream
     return new NextResponse(response.stream, {
       headers: {
         "Content-Type": "text/event-stream",
