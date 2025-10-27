@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { Sandbox } from '@vercel/sandbox';
 import type { SandboxState } from '@/types/sandbox';
 import { appConfig } from '@/config/app.config';
 
