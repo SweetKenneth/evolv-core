@@ -12,7 +12,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Fetch the page with a regular browser UA
     const response = await fetch(url, {
       headers: {
         "User-Agent":
