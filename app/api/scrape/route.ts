@@ -1,23 +1,53 @@
 import { NextResponse } from "next/server";
-import { logEvent, logError } from "@/lib/logger";
+import * as cheerio from "cheerio"; // parses the HTML nicely
+import fetch from "node-fetch";
 
 export async function POST(req: Request) {
-  const { url } = await req.json();
-  logEvent("Scrape initiated", { url });
-
   try {
-    if (!url || !url.startsWith("http")) {
-      logError("Invalid URL input", url);
-      return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
+    const { url } = await req.json();
+    if (!url) {
+      return NextResponse.json({ success: false, error: "No URL provided" }, { status: 400 });
     }
 
-    logEvent("Sending to sandbox", { url });
-    // this is where your E2B sandbox call will eventually go
+    // Fetch the page
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+      },
+      redirect: "follow"
+    });
 
-    logEvent("Scrape completed successfully", { url });
-    return NextResponse.json({ success: true });
+    if (!response.ok) {
+      return NextResponse.json({
+        success: false,
+        error: `Failed to fetch: ${response.status} ${response.statusText}`
+      }, { status: response.status });
+    }
+
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    // Extract some nice bits
+    const title = $("title").first().text().trim() || "No title found";
+    const meta = $('meta[name="description"]').attr("content") || "No description found";
+    const preview = $("body").text().replace(/\s+/g, " ").trim().slice(0, 500);
+
+    // Optional: Log errors or actions
+    console.log(`[SCRAPER] URL: ${url} | TITLE: ${title}`);
+
+    return NextResponse.json({
+      success: true,
+      url,
+      title,
+      meta,
+      preview
+    });
+
   } catch (err: any) {
-    logError("Scrape failed", err);
-    return NextResponse.json({ error: "Scrape failed", details: err.message }, { status: 500 });
+    console.error("[SCRAPER ERROR]", err);
+    return NextResponse.json({
+      success: false,
+      error: err.message || "Unknown error"
+    }, { status: 500 });
   }
 }
