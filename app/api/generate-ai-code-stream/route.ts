@@ -4,7 +4,6 @@ import { createGroq } from "@ai-sdk/groq";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
-// Force dynamic to keep streaming happy
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
@@ -24,7 +23,7 @@ export async function POST(req: NextRequest) {
     const isOpenAI = model.startsWith("openai/");
     const isGroq =
       model.startsWith("groq/") || model === "moonshotai/kimi-k2-instruct-0905";
-    const isCustom = model.startsWith("custom/"); // placeholder for future LLMs
+    const isCustom = model.startsWith("custom/");
 
     const groq = createGroq({
       apiKey: process.env.AI_GATEWAY_API_KEY ?? process.env.GROQ_API_KEY,
@@ -48,7 +47,6 @@ export async function POST(req: NextRequest) {
         : undefined,
     });
 
-    // pick provider
     const modelProvider = isOpenAI
       ? openai
       : isGoogle
@@ -61,7 +59,6 @@ export async function POST(req: NextRequest) {
         }
       : groq;
 
-    // normalize model id per provider
     let actualModel: string;
     if (isOpenAI) actualModel = model.replace("openai/", "");
     else if (isGoogle) actualModel = model.replace("google/", "");
@@ -72,12 +69,11 @@ export async function POST(req: NextRequest) {
     const result = await streamText({
       model: modelProvider(actualModel),
       prompt,
-      // keep it boring and predictable
       temperature: 0.2,
     });
 
-    // This returns a proper NextResponse for your AI SDK version
-    return result.toAIStreamResponse();
+    // Old SDK version wants this method name
+    return result.toTextStreamResponse();
   } catch (err) {
     console.error("[generate-ai-code-stream] Error:", err);
     return new Response(JSON.stringify({ error: "Stream init failed" }), {
@@ -86,4 +82,3 @@ export async function POST(req: NextRequest) {
     });
   }
 }
-
