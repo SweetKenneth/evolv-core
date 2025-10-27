@@ -1,6 +1,5 @@
 import { SandboxProvider, SandboxProviderConfig } from './types';
 import { E2BProvider } from './providers/e2b-provider';
-import { VercelProvider } from './providers/vercel-provider';
 
 export class SandboxFactory {
   static create(provider?: string, config?: SandboxProviderConfig): SandboxProvider {
