@@ -43,12 +43,13 @@ export async function POST(req: Request) {
       actualModel = model;
     }
 
+    // for your version, streamText returns a ReadableStream directly
     const response = await streamText({
       model: modelProvider(actualModel),
       prompt,
     });
 
-    return new NextResponse(response.stream, {
+    return new NextResponse(response, {
       headers: {
         "Content-Type": "text/event-stream",
       },
