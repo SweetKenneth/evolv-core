@@ -1,3 +1,6 @@
+# This line exists solely to bully Railway's cache
+# force rebuild
+
 # Use Node as the base
 FROM node:18-alpine
 
