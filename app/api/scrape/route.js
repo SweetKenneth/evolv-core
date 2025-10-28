@@ -1,3 +1,8 @@
+// Patch: prevent "File is not defined" on server
+if (typeof File === "undefined") {
+  global.File = class {};
+}
+
 import fetch from "node-fetch";
 import * as cheerio from "cheerio";
 
