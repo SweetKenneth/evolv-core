@@ -1,4 +1,4 @@
-// Fix: prevent "File is not defined" on server
+// Prevent "File is not defined" during server build
 if (typeof (global as any).File === "undefined") {
   (global as any).File = class {};
 }
@@ -10,7 +10,6 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const { url } = await req.json();
-
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
@@ -22,8 +21,8 @@ export async function POST(req: Request) {
     const title = $("title").text() || "No title found";
 
     return NextResponse.json({ success: true, title });
-  } catch (error) {
-    console.error("Scrape error:", error);
+  } catch (err) {
+    console.error(err);
     return NextResponse.json({ error: "Failed to scrape" }, { status: 500 });
   }
 }
