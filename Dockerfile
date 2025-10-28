@@ -1,34 +1,38 @@
-# This line exists solely to bully Railway's cache
-# force rebuild
+# --------------------------------------------
+#  Nuke Railway Cache: Maximum Overkill Mode
+# --------------------------------------------
 
 # Use Node as the base
 FROM node:18-alpine
 
-# === FORCE FRESH BUILD ===
-# Installing bun cleanly (extra echo breaks cache)
+# Break the cache at layer 1
+ARG CACHE_BREAKER=$(date)
+
+# Install Bun (cache gets smashed here)
 RUN apk add --no-cache curl bash && \
-    echo "force-build-$(date)" && \
+    echo "🚨 Cache Breaker: $CACHE_BREAKER 🚨" && \
     curl -fsSL https://bun.sh/install | bash
 
 # Add Bun to PATH
 ENV PATH="/root/.bun/bin:${PATH}"
 
+# Working directory
 WORKDIR /app
 
-# Copy project files
+# Copy everything
 COPY . .
 
-RUN echo "burn-cache-$(date)" > /app/.force-rebuild
+# Force rebuild every time
+RUN echo "🔥 full-rebuild-$CACHE_BREAKER" > /app/.force-rebuild
 
 # Install dependencies with Bun
 RUN bun install
 
-# Build the Next.js app
+# Build Next.js app
 RUN bun run build
 
 # Expose port
 EXPOSE 3000
 
-# Start the server
+# Run the server
 CMD ["bun", "run", "start"]
-
