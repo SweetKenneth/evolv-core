@@ -1,61 +1,41 @@
-import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import fetch from "node-fetch";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const { url } = await req.json();
     if (!url) {
-      return NextResponse.json(
-        { success: false, error: "No URL provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Missing URL" }, { status: 400 });
     }
 
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-      },
-      redirect: "follow",
-    });
-
+    // fetch the page
+    const response = await fetch(url);
     if (!response.ok) {
       return NextResponse.json(
-        {
-          success: false,
-          error: `Failed to fetch: ${response.status} ${response.statusText}`,
-        },
-        { status: response.status }
+        { success: false, error: `Failed to fetch ${url}` },
+        { status: 500 }
       );
     }
 
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    const title = $("title").first().text().trim() || "No title found";
-    const meta =
-      $('meta[name="description"]').attr("content") ||
-      $('meta[property="og:description"]').attr("content") ||
-      "No description found";
-    const preview = $("body").text().replace(/\s+/g, " ").trim().slice(0, 500);
+    // grab some sample data to verify scraper works
+    const title = $("title").text();
+    const metaDescription = $('meta[name="description"]').attr("content") || "";
 
-    console.log(`[SCRAPER] URL: ${url} | TITLE: ${title}`);
-
+    // return basic info
     return NextResponse.json({
       success: true,
       url,
       title,
-      meta,
-      preview,
+      metaDescription,
     });
   } catch (err: any) {
-    console.error("[SCRAPER ERROR]", err);
+    console.error("[Scraper Error]", err);
     return NextResponse.json(
-      {
-        success: false,
-        error: err.message || "Unknown error",
-      },
+      { success: false, error: err.message || "Internal Server Error" },
       { status: 500 }
     );
   }
