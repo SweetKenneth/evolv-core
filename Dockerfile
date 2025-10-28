@@ -18,6 +18,8 @@ WORKDIR /app
 # Copy project files
 COPY . .
 
+RUN echo "burn-cache-$(date)" > /app/.force-rebuild
+
 # Install dependencies with Bun
 RUN bun install
 
